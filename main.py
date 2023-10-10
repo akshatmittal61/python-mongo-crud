@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Response, status
 from data import users
-from utils import user_model_abstraction
+from utils import user_model_abstraction, HTTP
 
 app = FastAPI()
 
@@ -27,12 +27,13 @@ def get_users():
 @app.get('/users/{user_id}')
 def get_user_by_id(user_id, response: Response):
     res = None
+    http = HTTP(response)
     for user in users:
         if str(user['id']) == user_id:
             res = user_model_abstraction(user)
 
     if res is None:
-        response.status_code = status.HTTP_404_NOT_FOUND
+        http.status(status.HTTP_404_NOT_FOUND)
 
     return {
         'message': 'success',
