@@ -24,8 +24,11 @@ class Response:
         else:
             self.response.status_code = status_code
 
-    def body(self, body: fastapi.responses.JSONResponse):
+    def body(self, body):
         self.response.body = body
+
+    def get_body(self):
+        return self.response.body
 
     def __init__(self, response: fastapi.Response, status: int = 200):
         self.response = response
@@ -33,11 +36,19 @@ class Response:
 
 
 class HTTP:
-    response = None
+    http_response = None
 
     def status(self, status: int = 200):
         # self.response = Response(status=status)
-        self.response.status(status)
+        self.http_response.status(status)
+
+    def response(self, status: int = 200, body=None):
+        self.http_response.status(status)
+        self.http_response.body({
+            'message': 'success' if status < 400 else 'failure',
+            'data': body
+        })
+        return self.http_response.get_body()
 
     def __init__(self, response: fastapi.Response):
-        self.response = Response(response)
+        self.http_response = Response(response)
