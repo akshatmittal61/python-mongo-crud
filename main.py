@@ -14,10 +14,13 @@ def get_root(response: Response):
 @app.get('/users')
 def get_users(response: Response):
     http = HTTP(response)
-    users_to_send = []
-    for user in users:
-        users_to_send.append(user_model_abstraction(user))
-    return http.response(status.HTTP_200_OK, users_to_send)
+    try:
+        users_to_send = []
+        for user in users:
+            users_to_send.append(user_model_abstraction(user))
+        return http.response(status.HTTP_200_OK, users_to_send)
+    except Exception as e:
+        return http.response(status.HTTP_500_INTERNAL_SERVER_ERROR, str(e))
 
 
 @app.get('/users/{user_id}')
@@ -34,5 +37,29 @@ def get_user_by_id(user_id, response: Response):
         return http.response(status.HTTP_200_OK, res)
     except ValueError:
         return http.response(status.HTTP_404_NOT_FOUND, 'Invalid user id')
+    except Exception as e:
+        return http.response(status.HTTP_500_INTERNAL_SERVER_ERROR, str(e))
+
+
+@app.post('/users')
+def add_user(name: str, username: str, email: str, website: str, response: Response):
+    http = HTTP(response)
+    try:
+        if name is None or username is None or email is None:
+            return http.response(status.HTTP_400_BAD_REQUEST, 'Please enter name, email and username')
+        if username in [user['username'] for user in users]:
+            return http.response(status.HTTP_409_CONFLICT, f'Username {username} already in use')
+        if email in [user['email'] for user in users]:
+            return http.response(status.HTTP_409_CONFLICT, f'Email {email} already in use')
+        new_user = {
+            'id': len(users) + 1,
+            'name': name,
+            'username': username,
+            'email': email
+        }
+        if website is not None:
+            new_user['website'] = website
+        users.append(new_user)
+        return http.response(status.HTTP_201_CREATED, 'New User added successfully')
     except Exception as e:
         return http.response(status.HTTP_500_INTERNAL_SERVER_ERROR, str(e))
