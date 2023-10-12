@@ -86,3 +86,18 @@ def update_user(user_id, data, response: Response):
         return http.response(status.HTTP_404_NOT_FOUND, 'Invalid user id')
     except Exception as e:
         return http.response(status.HTTP_500_INTERNAL_SERVER_ERROR, str(e))
+
+
+@app.delete('/users/{user_id}')
+def delete_user(user_id, response: Response):
+    http = HTTP(response)
+    try:
+        user_id = int(user_id)
+        if user_id not in [user['id'] for user in users]:
+            return http.response(status.HTTP_404_NOT_FOUND, 'User not found')
+        users.remove([user for user in users if user['id'] == user_id][0])
+        return http.response(status.HTTP_204_NO_CONTENT, 'User deleted successfully')
+    except ValueError:
+        return http.response(status.HTTP_404_NOT_FOUND, 'Invalid user id')
+    except Exception as e:
+        return http.response(status.HTTP_500_INTERNAL_SERVER_ERROR, str(e))
