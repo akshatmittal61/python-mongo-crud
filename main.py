@@ -25,16 +25,13 @@ def get_users(response: Response):
 
 @app.get('/users/{user_id}')
 def get_user_by_id(user_id, response: Response):
-    res = None
     http = HTTP(response)
     try:
         user_id = int(user_id)
-        for user in users:
-            if user['id'] == user_id:
-                res = user_model_abstraction(user)
-        if res is None:
-            return http.response(status.HTTP_404_NOT_FOUND, res)
-        return http.response(status.HTTP_200_OK, res)
+        res = [user_model_abstraction(user) for user in users if user['id'] == user_id]
+        if len(res) == 0:
+            return http.response(status.HTTP_404_NOT_FOUND, 'User not found')
+        return http.response(status.HTTP_200_OK, res[0])
     except ValueError:
         return http.response(status.HTTP_404_NOT_FOUND, 'Invalid user id')
     except Exception as e:
