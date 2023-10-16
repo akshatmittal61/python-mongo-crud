@@ -1,7 +1,10 @@
 from fastapi import FastAPI, Response, status
 from data import users
 from utils import user_model_abstraction, HTTP
+from dotenv import dotenv_values
+from pymongo import MongoClient
 
+config = dotenv_values(".env")
 app = FastAPI()
 
 
@@ -101,3 +104,13 @@ def delete_user(user_id, response: Response):
         return http.response(status.HTTP_404_NOT_FOUND, 'Invalid user id')
     except Exception as e:
         return http.response(status.HTTP_500_INTERNAL_SERVER_ERROR, str(e))
+
+@app.on_event("startup")
+def startup_db_client():
+    app.mongodb_client = MongoClient(config["MONGODB_CONNECTION_URI"])
+    app.database = app.mongodb_client[config["DB_NAME"]]
+    print("Connected to the MongoDB database!")
+
+@app.on_event("shutdown")
+def shutdown_db_client():
+    app.mongodb_client.close()
