@@ -51,9 +51,13 @@ async def create_task(task: Task, request: Request, response: Response):
 
 @app.on_event("startup")
 def startup_db_client():
-    app.mongodb_client = MongoClient(config["MONGODB_CONNECTION_URI"])
-    app.database = app.mongodb_client[config["DB_NAME"]]
-    print("Connected to the MongoDB database!")
+    try:
+        print(config)
+        app.mongodb_client = MongoClient(config["MONGODB_CONNECTION_URI"])
+        app.database = app.mongodb_client[config["DB_NAME"]]
+        print("Connected to the MongoDB database!")
+    except Exception as e:
+        print(f'Unable to connect with database: {str(e)}')
 
 
 @app.on_event("shutdown")
