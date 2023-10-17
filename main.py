@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Response, status
+from fastapi import FastAPI, Request, Response, status, Body
 from fastapi.encoders import jsonable_encoder
 from dotenv import dotenv_values
 from pymongo import MongoClient
@@ -38,13 +38,14 @@ async def get_task_by_id(task_id: str, request: Request, response: Response):
 
 
 @app.post('/tasks')
-async def create_task(task: Task, request: Request, response: Response):
+async def create_task(request: Request, response: Response, task: Task = Body(...)):
     http = HTTP(response)
     try:
-        print(task)
         task = jsonable_encoder(task)
         new_task = request.app.database['tasks'].insert_one(task)
-        return http.response(status.HTTP_201_CREATED, new_task)
+        created_task = request.app.database['tasks'].find_one({'_id': new_task.inserted_id})
+        created_task['_id'] = str(created_task['_id'])
+        return http.response(status.HTTP_201_CREATED, created_task)
     except Exception as e:
         return http.response(status.HTTP_500_INTERNAL_SERVER_ERROR, str(e))
 
@@ -52,12 +53,12 @@ async def create_task(task: Task, request: Request, response: Response):
 @app.on_event("startup")
 def startup_db_client():
     try:
-        print(config)
         app.mongodb_client = MongoClient(config["MONGODB_CONNECTION_URI"])
         app.database = app.mongodb_client[config["DB_NAME"]]
         print("Connected to the MongoDB database!")
     except Exception as e:
         print(f'Unable to connect with database: {str(e)}')
+        exit(1)
 
 
 @app.on_event("shutdown")

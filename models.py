@@ -1,10 +1,7 @@
-from typing import Optional
-import uuid
 from pydantic import BaseModel, Field
 
 
 class Task(BaseModel):
-    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4)
     title: str
     description: str
     completed: bool = False
