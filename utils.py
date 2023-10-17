@@ -1,4 +1,5 @@
 import fastapi
+from models import Task
 
 
 def user_model_abstraction(user):
@@ -7,6 +8,15 @@ def user_model_abstraction(user):
         'name': user['name'],
         'username': user['username'],
         'email': user['email'],
+    }
+
+
+def task_model_abstraction(task):
+    return {
+        'id': str(task['_id']) if '_id' in task else '0',
+        'title': task['title'],
+        'description': task['description'],
+        'completed': task['completed']
     }
 
 

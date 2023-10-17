@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, Response, status, Body
 from fastapi.encoders import jsonable_encoder
 from dotenv import dotenv_values
 from pymongo import MongoClient
-from utils import HTTP
+from utils import HTTP, task_model_abstraction
 from models import Task
 
 config = dotenv_values(".env")
@@ -44,8 +44,7 @@ async def create_task(request: Request, response: Response, task: Task = Body(..
         task = jsonable_encoder(task)
         new_task = request.app.database['tasks'].insert_one(task)
         created_task = request.app.database['tasks'].find_one({'_id': new_task.inserted_id})
-        created_task['_id'] = str(created_task['_id'])
-        return http.response(status.HTTP_201_CREATED, created_task)
+        return http.response(status.HTTP_201_CREATED, task_model_abstraction(created_task))
     except Exception as e:
         return http.response(status.HTTP_500_INTERNAL_SERVER_ERROR, str(e))
 
