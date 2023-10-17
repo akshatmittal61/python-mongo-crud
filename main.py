@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Response, status, Body
+from fastapi import FastAPI, APIRouter, Request, Response, status, Body
 from fastapi.encoders import jsonable_encoder
 from dotenv import dotenv_values
 from pymongo import MongoClient
@@ -9,12 +9,9 @@ from models import Task
 
 config = dotenv_values(".env")
 app = FastAPI()
+router = APIRouter()
 
-
-@app.get('/')
-def get_root(response: Response):
-    http = HTTP(response)
-    return http.response(status.HTTP_200_OK, 'Hello World')
+app.include_router(router, prefix='/api/v1')
 
 
 @app.get('/tasks')
@@ -22,6 +19,7 @@ async def get_all_tasks(request: Request, response: Response):
     http = HTTP(response)
     try:
         tasks = list(request.app.database['tasks'].find())
+        tasks = 
         return http.response(status.HTTP_200_OK, tasks)
     except Exception as e:
         return http.response(status.HTTP_500_INTERNAL_SERVER_ERROR, str(e))
