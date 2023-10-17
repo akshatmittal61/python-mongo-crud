@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request, Response, status, Body
 from fastapi.encoders import jsonable_encoder
 from dotenv import dotenv_values
 from pymongo import MongoClient
+from bson.objectid import ObjectId
 from utils import HTTP, task_model_abstraction
 from models import Task
 
@@ -29,7 +30,8 @@ async def get_all_tasks(request: Request, response: Response):
 async def get_task_by_id(task_id: str, request: Request, response: Response):
     http = HTTP(response)
     try:
-        task = dict(request.app.database['tasks'].find(id == task_id))
+        task = request.app.database['tasks'].find_one({'_id': ObjectId(task_id)})
+        task = task_model_abstraction(task)
         if len(task) == 0:
             return http.response(status.HTTP_404_NOT_FOUND, "No Task Found by this id")
         return http.response(status.HTTP_200_OK, task)

@@ -54,7 +54,7 @@ class HTTP:
 
     def response(self, status: int = 200, body=None):
         if status >= 400:
-            print(str(body))
+            print(body)
         self.http_response.status(status)
         self.http_response.body({
             'message': 'success' if status < 400 else 'failure',
