@@ -19,7 +19,7 @@ async def get_all_tasks(request: Request, response: Response):
     http = HTTP(response)
     try:
         tasks = list(request.app.database['tasks'].find())
-        tasks = 
+        # tasks =
         return http.response(status.HTTP_200_OK, tasks)
     except Exception as e:
         return http.response(status.HTTP_500_INTERNAL_SERVER_ERROR, str(e))
@@ -60,6 +60,8 @@ async def update_task(task_id: str, request: Request, response: Response, task_b
         for key, value in task_body.model_dump().items():
             if value is not None and value != '':
                 task[key] = value
+        if len(task) == 0:
+            return http.response(status.HTTP_400_BAD_REQUEST, 'No field to update')
         find_res = request.app.database['tasks'].find_one({'_id': ObjectId(task_id)})
         if find_res is None:
             return http.response(status.HTTP_404_NOT_FOUND, f'Task (id: {task_id}) not found')
